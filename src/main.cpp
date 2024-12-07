@@ -10,63 +10,82 @@ using std::cin;
 using std::cout;
 using std::endl;
 
+void rangeArray(double arr[], const double &min, const double &max,
+                const int &n = 1000);
+
 void RHS(const double &t, double Y[], double R[]);
 
 int main() {
-	std::ofstream out;
-	out.open("data1.csv");
-	if (!out) exit(1);
+	// Create parameter grid
+	const int nPoints = 50;
+	const int nStep   = 1000;
+	// const double tol  = 1.0e-1;
 
-	const double tc   = 1 / 140.0;
-	const double tmin = 0.0, tmax = 0.8 / tc;
-	const int nStep = 1000;
-	const double dt = (tmax - tmin) / nStep;
-	double t        = tmin;
+	const double minA = 0.0;
+	const double maxA = 1.0;
+	double gridA[nPoints + 1];
+	rangeArray(gridA, minA, maxA, nPoints);
 
-	const double theta0[] = {M_PI / 6, M_PI * 2.0 / 3.0};
-	const double omega0   = 0.1;
-	const double sigma    = 0.01;
-	const double a        = 0.5;
-	const double mu       = 1.0;
-	double y[]            = {theta0[0], omega0, sigma, a, mu};
-	const int nEq         = static_cast<int>(sizeof(y) / sizeof(y[0]));
+	const double minSigma = 1.0e-5;
+	const double maxSigma = 1.0e-1;
+	double gridSigma[nPoints + 1];
+	rangeArray(gridSigma, minSigma, maxSigma, nPoints);
 
-	out << "t,theta,omega,sigma,a,mu" << endl;
-	out << tc * t << "," << y[0] << "," << y[1] << "," << y[2] << "," << y[3]
-		<< "," << y[4] << endl;
-	for (int i = 0; i < nStep; i++) {
-		rk4Step(t, y, RHS, dt, nEq);
-		t += dt;
-
-		if (y[0] >= M_PI) y[0] -= 2 * M_PI;
-
-		out << tc * t << "," << y[0] << "," << y[1] << "," << y[2] << ","
-			<< y[3] << "," << y[4] << endl;
+	std::ofstream stability, trajectory;
+	stability.open("data/stability.csv");
+	trajectory.open("data/trajectory.csv");
+	if (!stability || !trajectory) {
+		cerr << "Error: unable to open file" << endl;
+		return 1;
 	}
 
-	out.close();
+	// Init model parameters
+	const double theta0 = 1.0e-5;
+	const double omega0 = 0.01;
+	const double mu     = 1.0;
+	const int nEq       = 5;
 
-	out.open("data2.csv");
-	if (!out) exit(1);
+	const double tmin = 0.0;
+	const double dt   = 1.0e-1;
 
-	double z[] = {theta0[1], omega0, sigma, a, mu};
-	t          = tmin;
+	stability << "a,sigma,endpoint" << endl;
+	trajectory << "t,theta,a,sigma" << endl;
+	for (int iA = 0; iA <= nPoints; iA++) {
+		for (int iSigma = 0; iSigma <= nPoints; iSigma++) {
+			const double a     = gridA[iA];
+			const double sigma = gridSigma[iSigma];
 
-	out << "t,theta,omega,sigma,a,mu" << endl;
-	out << tc * t << "," << z[0] << "," << z[1] << "," << z[2] << "," << z[3]
-		<< "," << z[4] << endl;
-	for (int i = 0; i < nStep; i++) {
-		rk4Step(t, z, RHS, dt, nEq);
-		t += dt;
+			double Y[nEq] = {theta0, omega0, sigma, a, mu};
+			double t      = tmin;
 
-		if (z[0] >= M_PI) z[0] -= 2 * M_PI;
+			trajectory << std::setprecision(10) << t << "," << Y[0] << "," << a
+					   << "," << sigma << endl;
+			for (int iStep = 0; iStep < nStep; iStep++) {
+				// Integration step
+				rk4Step(t, Y, RHS, dt, nEq);
+				t += dt;
 
-		out << tc * t << "," << z[0] << "," << z[1] << "," << z[2] << ","
-			<< z[3] << "," << z[4] << endl;
+				if (fabs(Y[0]) >= M_PI) Y[0] = fmod(Y[0], 2 * M_PI);
+
+				trajectory << std::setprecision(10) << t << "," << Y[0] << ","
+						   << a << "," << sigma << endl;
+			}
+
+			stability << std::setprecision(10) << a << "," << sigma << ","
+					  << Y[0] << endl;
+		}
 	}
 
-	out.close();
+	stability.close();
+	trajectory.close();
+
 	return 0;
+}
+
+void rangeArray(double arr[], const double &min, const double &max,
+                const int &n) {
+	const double delta = (max - min) / n;
+	for (int i = 0; i <= n; i++) arr[i] = min + i * delta;
 }
 
 void RHS(const double &t, double Y[], double R[]) {
