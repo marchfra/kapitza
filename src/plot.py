@@ -4,13 +4,14 @@ import pandas as pd
 
 from my_formatter import multiple_formatter
 
+plt.style.use(["grid", "science", "notebook", "mylegend"])
+
+SAVE_FIGURES = False
+
 
 def check_stability(a: float, sigma: float) -> bool:
     """Check if the Kapitza pendulum is stable according to the Multiscale Method."""
     return a**2 > 2 * sigma
-
-
-plt.style.use(["grid", "science", "notebook", "mylegend"])
 
 
 def preprocess_stability(tol: float = 1e-2) -> pd.DataFrame:
@@ -62,6 +63,9 @@ def plot_stability(skip: int = 1) -> None:
 
     fig.tight_layout()
 
+    if SAVE_FIGURES:
+        fig.savefig("figures/stability.pdf", dpi=200)
+
 
 def plot_trajectories(skip: int = 2) -> None:
     """Plots the trajectories of the Kapitza pendulum for various values of a-sigma."""
@@ -89,6 +93,9 @@ def plot_trajectories(skip: int = 2) -> None:
     ax.yaxis.set_major_formatter(plt.FuncFormatter(multiple_formatter(6)))
 
     fig.tight_layout()
+
+    if SAVE_FIGURES:
+        fig.savefig("figures/trajectory.pdf", dpi=200)
 
 
 def main() -> None:
