@@ -11,7 +11,7 @@ SAVE_FIGURES = True
 
 
 def check_stability(a: float, sigma: float) -> bool:
-    """Check if the Kapitza pendulum is stable according to the Multiscale Method."""
+    """Check if the fixed point is stable according to the Multiscale Method."""
     return a**2 > 2 * sigma
 
 
@@ -20,7 +20,7 @@ def preprocess_stability(tol: float = 1e-2) -> pd.DataFrame:
 
     df = pd.read_csv("data/stability.csv")
 
-    df["stability"] = df["endpoint"] < tol
+    df["stability"] = np.abs(df["endpoint"]) < tol
     df["is_stable"] = check_stability(df["a"], df["sigma"])
 
     return df
@@ -28,7 +28,7 @@ def preprocess_stability(tol: float = 1e-2) -> pd.DataFrame:
 
 def num_errors(tol: float, df: pd.DataFrame) -> int:
     """Count the number of errors in the stability data."""
-    df["stability"] = df["endpoint"] < tol
+    df["stability"] = np.abs(df["endpoint"]) < tol
     return np.sum(df["stability"] != df["is_stable"])
 
 
@@ -70,18 +70,21 @@ def optimize_tol(tol_guess: float = 1e-7) -> float:
 
     df = preprocess_stability(-1)
 
-    result = minimize_scalar(
-        num_errors, args=(df,), bounds=(1e-8, 1e-6), method="bounded"
+    optim = minimize_scalar(
+        num_errors,
+        args=(df,),
+        bounds=(0.1 * tol_guess, 10 * tol_guess),
+        method="bounded",
     )
 
-    if not result.success:
-        raise ValueError(f"Optimization failed: {result.message}")
+    if not optim.success:
+        raise ValueError(f"Optimization failed: {optim.message}")
 
-    return result.x
+    return optim.x
 
 
 def plot_stability(tol: float = 1e-2, skip: int = 1) -> None:
-    """Plots the stability of the Kapitza pendulum on the a-sigma plane."""
+    """Plots the stability of the fixed point on the a-sigma plane."""
 
     df = preprocess_stability(tol)[::skip]
 
@@ -226,19 +229,19 @@ def plot_errors(tol: float = 1e-2, skip: int = 2) -> None:
 def main() -> None:
     """Main function."""
 
-    opt_tol = optimize_tol()
-    print(f"Optimal tolerance: {opt_tol:.3g}")
-    phys_tol = 1e-7
     skip = 1
 
-    plot_stability(opt_tol)
+    phys_tol = physical_tol()
+    print(f"Physical tolerance: {phys_tol:.3g}")
     plot_stability(phys_tol)
-
-    plot_trajectories(opt_tol, skip)
-    plot_errors(opt_tol, skip)
-
     plot_trajectories(phys_tol, skip)
     plot_errors(phys_tol, skip)
+
+    opt_tol = optimize_tol(phys_tol)
+    plot_stability(opt_tol)
+    print(f"Optimal tolerance: {opt_tol:.3g}")
+    plot_trajectories(opt_tol, skip)
+    plot_errors(opt_tol, skip)
 
     plt.show()
 
