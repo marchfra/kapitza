@@ -19,7 +19,6 @@ int main() {
 	// Create parameter grid
 	const int nPoints = 30;
 	const int nStep   = 10000;
-	// const double tol  = 1.0e-1;
 
 	const double minA = 0.0;
 	const double maxA = 1.0;

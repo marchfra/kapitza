@@ -1,12 +1,13 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from scipy.optimize import minimize_scalar
 
 from my_formatter import multiple_formatter
 
 plt.style.use(["grid", "science", "notebook", "mylegend"])
 
-SAVE_FIGURES = False
+SAVE_FIGURES = True
 
 
 def check_stability(a: float, sigma: float) -> bool:
@@ -25,20 +26,26 @@ def preprocess_stability(tol: float = 1e-2) -> pd.DataFrame:
     return df
 
 
+def num_errors(tol: float, df: pd.DataFrame) -> int:
+    """Count the number of errors in the stability data."""
+    df["stability"] = df["endpoint"] < tol
+    return np.sum(df["stability"] != df["is_stable"])
+
+
 def optimize_tol() -> float:
     """Find the tolerance (to determine the numerical stability) that minimizes the
     number of errors."""
 
-    df = preprocess_stability()
+    df = preprocess_stability(-1)
 
-    tols = np.linspace(1e-8, 1e-6)
-    errors = np.zeros_like(tols)
-    for i, tol in enumerate(tols):
-        df["stability"] = df["endpoint"] < tol
-        errors[i] = np.sum(df["stability"] != df["is_stable"])
+    result = minimize_scalar(
+        num_errors, args=(df,), bounds=(1e-8, 1e-6), method="bounded"
+    )
 
-    optimal_tol = tols[np.argmin(errors)]
-    return optimal_tol
+    if not result.success:
+        raise ValueError(f"Optimization failed: {result.message}")
+
+    return result.x
 
 
 def plot_stability(tol: float = 1e-2, skip: int = 1) -> None:
@@ -62,7 +69,7 @@ def plot_stability(tol: float = 1e-2, skip: int = 1) -> None:
         color="green",
         linewidth=0,
         alpha=0.15,
-        label="Numerically stable",
+        label="Stable",
     )
     ax.fill_between(
         np.linspace(a_max, df["a"].max()),
@@ -78,13 +85,23 @@ def plot_stability(tol: float = 1e-2, skip: int = 1) -> None:
         color="red",
         linewidth=0,
         alpha=0.15,
-        label="Numerically unstable",
+        label="Unstable",
     )
 
     # Plot numerical stability points
-    ax.scatter(stable["a"], stable["sigma"], color="green", label="Stable", marker="o")
     ax.scatter(
-        unstable["a"], unstable["sigma"], color="red", label="Unstable", marker="o"
+        stable["a"],
+        stable["sigma"],
+        color="green",
+        label="Numerically stable",
+        marker="o",
+    )
+    ax.scatter(
+        unstable["a"],
+        unstable["sigma"],
+        color="red",
+        label="Numerically unstable",
+        marker="o",
     )
 
     ax.set_title(f"Stability of the Kapitza pendulum (tol = {tol:.3g})")
@@ -158,8 +175,8 @@ def plot_errors(tol: float = 1e-2, skip: int = 2) -> None:
                     ax.plot(traj["t"], traj["theta"])
 
     ax.set_title(
-        f"Numerically unstable but actually stable\n"
-        f"trajectories of the Kapitza pendulum (tol = {tol:.3g})"
+        f"Numerically unstable but actually stable trajectories\n"
+        f"of the Kapitza pendulum (tol = {tol:.3g})"
     )
     ax.set_xlabel(r"$t$")
     ax.set_ylabel(r"$\theta(t)$")
@@ -178,6 +195,7 @@ def main() -> None:
     """Main function."""
 
     opt_tol = optimize_tol()
+    print(f"Optimal tolerance: {opt_tol:.3g}")
     phys_tol = 1e-7
     skip = 1
 
