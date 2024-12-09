@@ -50,7 +50,7 @@ int main() {
 		1.0e-2;  // with the current parameters, the fulcrum oscillates with
 	             // omega around 32, so a step size of 1.0e-2 is enough to
 	             // capture the dynamics (the period of oscillation is
-	             // 2π/omega = 0.2)
+	             // 2π/omega = 0.2s)
 
 	stability << "a,sigma,endpoint" << endl;
 	trajectory << "t,theta,a,sigma" << endl;
