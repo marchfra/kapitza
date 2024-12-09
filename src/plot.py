@@ -32,7 +32,39 @@ def num_errors(tol: float, df: pd.DataFrame) -> int:
     return np.sum(df["stability"] != df["is_stable"])
 
 
-def optimize_tol() -> float:
+def physical_tol(tol_guess: float = 1e-7, max_step: int = 1000) -> float:
+    """Find the tolerance (to determine the numerical stability) such that if a = 0 the
+    fixed point is always unstable."""
+
+    df = pd.read_csv("data/stability.csv")
+    filt = df["a"] == 0
+    df = df[filt]
+
+    tol = 10 * tol_guess
+
+    df["stability"] = np.abs(df["endpoint"]) < tol
+
+    # Take big steps until only one fixed point is stable
+    while df["stability"].sum() > 1:
+        tol *= 0.5
+        df["stability"] = np.abs(df["endpoint"]) < tol
+
+    if df["stability"].sum() != 1:
+        raise ValueError("Failed to find the physical tolerance.")
+
+    # Take small steps until the fixed point becomes unstable
+    n_step = 0
+    while df["stability"].sum() == 1:
+        if n_step > max_step:
+            raise ValueError("Failed to find the physical tolerance.")
+        tol *= 0.999
+        df["stability"] = np.abs(df["endpoint"]) < tol
+        n_step += 1
+
+    return tol
+
+
+def optimize_tol(tol_guess: float = 1e-7) -> float:
     """Find the tolerance (to determine the numerical stability) that minimizes the
     number of errors."""
 
