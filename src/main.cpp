@@ -17,8 +17,8 @@ void RHS(const double &t, double Y[], double R[]);
 
 int main() {
 	// Create parameter grid
-	const int nPoints = 50;
-	const int nStep   = 1000;
+	const int nPoints = 30;
+	const int nStep   = 10000;
 	// const double tol  = 1.0e-1;
 
 	const double minA = 0.0;
@@ -40,13 +40,18 @@ int main() {
 	}
 
 	// Init model parameters
-	const double theta0 = 1.0e-5;
-	const double omega0 = 0.01;
-	const double mu     = 1.0;
-	const int nEq       = 5;
+	const double theta0 = 1.0e-7;
+	const double omega0 = 0.0;  // omega0 is the initial angular velocity, not
+	                            // the frequency of oscillation of the fulcrum
+	const double mu = 1.0;
+	const int nEq   = 5;
 
 	const double tmin = 0.0;
-	const double dt   = 1.0e-1;
+	const double dt =
+		1.0e-2;  // with the current parameters, the fulcrum oscillates with
+	             // omega around 32, so a step size of 1.0e-2 is enough to
+	             // capture the dynamics (the period of oscillation is
+	             // 2π/omega = 0.2)
 
 	stability << "a,sigma,endpoint" << endl;
 	trajectory << "t,theta,a,sigma" << endl;
@@ -58,20 +63,21 @@ int main() {
 			double Y[nEq] = {theta0, omega0, sigma, a, mu};
 			double t      = tmin;
 
-			trajectory << std::setprecision(10) << t << "," << Y[0] << "," << a
+			trajectory << std::setprecision(16) << t << "," << Y[0] << "," << a
 					   << "," << sigma << endl;
 			for (int iStep = 0; iStep < nStep; iStep++) {
 				// Integration step
 				rk4Step(t, Y, RHS, dt, nEq);
 				t += dt;
 
+				// This is probably not necessary
 				if (fabs(Y[0]) >= M_PI) Y[0] = fmod(Y[0], 2 * M_PI);
 
-				trajectory << std::setprecision(10) << t << "," << Y[0] << ","
+				trajectory << std::setprecision(16) << t << "," << Y[0] << ","
 						   << a << "," << sigma << endl;
 			}
 
-			stability << std::setprecision(10) << a << "," << sigma << ","
+			stability << std::setprecision(16) << a << "," << sigma << ","
 					  << Y[0] << endl;
 		}
 	}
