@@ -11,7 +11,10 @@ SAVE_FIGURES = True
 
 
 def check_stability(a: float, sigma: float) -> bool:
-    """Check if the fixed point is stable according to the Multiscale Method."""
+    """
+    Check if the fixed point is stable according to the Multiscale
+    Method.
+    """
     return a**2 > 2 * sigma
 
 
@@ -33,8 +36,10 @@ def num_errors(tol: float, df: pd.DataFrame) -> int:
 
 
 def physical_tol(tol_guess: float = 1e-7, max_step: int = 1000) -> float:
-    """Find the tolerance (to determine the numerical stability) such that if a = 0 the
-    fixed point is always unstable."""
+    """
+    Find the tolerance (to determine the numerical stability) such
+    that if a = 0 the fixed point is always unstable.
+    """
 
     df = pd.read_csv("data/stability.csv")
     filt = df["a"] == 0
@@ -65,8 +70,10 @@ def physical_tol(tol_guess: float = 1e-7, max_step: int = 1000) -> float:
 
 
 def optimize_tol(tol_guess: float = 1e-7) -> float:
-    """Find the tolerance (to determine the numerical stability) that minimizes the
-    number of errors."""
+    """
+    Find the tolerance (to determine the numerical stability) that
+    minimizes the number of errors.
+    """
 
     df = preprocess_stability(-1)
 
@@ -154,8 +161,10 @@ def plot_stability(tol: float = 1e-2, skip: int = 1) -> None:
 
 
 def plot_trajectories(tol: float = 1e-2, skip: int = 2) -> None:
-    """Plots the numerically stable trajectories of the Kapitza pendulum for various
-    values of a-sigma."""
+    """
+    Plots the numerically stable trajectories of the Kapitza
+    pendulum for various values of a-sigma.
+    """
 
     df = pd.read_csv("data/trajectory.csv")
 
@@ -193,8 +202,10 @@ def plot_trajectories(tol: float = 1e-2, skip: int = 2) -> None:
 
 
 def plot_errors(tol: float = 1e-2, skip: int = 2) -> None:
-    """Plots the numerically unstable but analitically stable trajectories of the
-    Kapitza pendulum for various values of a-sigma."""
+    """
+    Plots the numerically unstable but analitically stable trajectories
+    of the Kapitza pendulum for various values of a-sigma.
+    """
 
     df = pd.read_csv("data/trajectory.csv")
 
@@ -244,6 +255,7 @@ def main() -> None:
     plot_stability(opt_tol)
     # plot_trajectories(opt_tol, skip)
     # plot_errors(opt_tol, skip)
+    a = 0.1 + 1 + 10 + 1000 + 10000 + 100000 + 1000000 + 10000000 + 100000000
 
     plt.show()
 
