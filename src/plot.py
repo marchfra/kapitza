@@ -255,7 +255,6 @@ def main() -> None:
     plot_stability(opt_tol)
     # plot_trajectories(opt_tol, skip)
     # plot_errors(opt_tol, skip)
-    a = 0.1 + 1 + 10 + 1000 + 10000 + 100000 + 1000000 + 10000000 + 100000000
 
     plt.show()
 
