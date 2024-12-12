@@ -7,7 +7,7 @@ from my_formatter import multiple_formatter
 
 plt.style.use(["grid", "science", "notebook", "mylegend"])
 
-SAVE_FIGURES = False
+SAVE_FIGURES = True
 
 
 def check_stability(a: float, sigma: float) -> bool:
