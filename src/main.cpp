@@ -21,12 +21,12 @@ int main() {
 	const int nStep   = 10000;
 
 	const double minA = 0.0;
-	const double maxA = 1.0;
+	const double maxA = 0.3;  // a of order epsilon
 	double gridA[nPoints + 1];
 	rangeArray(gridA, minA, maxA, nPoints);
 
 	const double minSigma = 1.0e-5;
-	const double maxSigma = 1.0e-1;
+	const double maxSigma = 2.0e-2;  // sigma of order epsilon^2
 	double gridSigma[nPoints + 1];
 	rangeArray(gridSigma, minSigma, maxSigma, nPoints);
 
@@ -42,15 +42,15 @@ int main() {
 	const double theta0 = 1.0e-7;
 	const double omega0 = 0.0;  // omega0 is the initial angular velocity, not
 	                            // the frequency of oscillation of the fulcrum
-	const double mu = 1.0;
+	const double mu = 0.1;      // mu of order epsilon
 	const int nEq   = 5;
 
 	const double tmin = 0.0;
 	const double dt =
 		1.0e-2;  // with the current parameters, the fulcrum oscillates with
-	             // omega around 32, so a step size of 1.0e-2 is enough to
-	             // capture the dynamics (the period of oscillation is
-	             // 2π/omega = 0.2s)
+	             // omega of order 10, so a step size of 1.0e-2 should be
+	             // enough to capture the dynamics (the period of oscillation
+	             // is 2π/omega = 0.6)
 
 	stability << "a,sigma,endpoint" << endl;
 	trajectory << "t,theta,a,sigma" << endl;
