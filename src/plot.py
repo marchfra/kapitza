@@ -7,7 +7,7 @@ from my_formatter import multiple_formatter
 
 plt.style.use(["grid", "science", "notebook", "mylegend"])
 
-SAVE_FIGURES = True
+SAVE_FIGURES = False
 
 
 def check_stability(a: float, sigma: float) -> bool:
@@ -61,7 +61,7 @@ def physical_tol(tol_guess: float = 1e-7, max_step: int = 1000) -> float:
         df["stability"] = np.abs(df["endpoint"]) < tol
         n_step += 1
 
-    return tol
+    return tol, num_errors(tol, preprocess_stability(tol))
 
 
 def optimize_tol(tol_guess: float = 1e-7) -> float:
@@ -73,14 +73,16 @@ def optimize_tol(tol_guess: float = 1e-7) -> float:
     optim = minimize_scalar(
         num_errors,
         args=(df,),
-        bounds=(0.1 * tol_guess, 10 * tol_guess),
+        bounds=(0.1 * tol_guess, 2 * tol_guess),
         method="bounded",
     )
 
     if not optim.success:
         raise ValueError(f"Optimization failed: {optim.message}")
 
-    return optim.x
+    errors = num_errors(optim.x, df)
+
+    return optim.x, errors
 
 
 def plot_stability(tol: float = 1e-2, skip: int = 1) -> None:
@@ -231,17 +233,17 @@ def main() -> None:
 
     skip = 1
 
-    phys_tol = physical_tol()
-    print(f"Physical tolerance: {phys_tol:.3g}")
+    phys_tol, n_errors = physical_tol()
+    print(f"Physical tolerance: {phys_tol:.3g}, number of errors: {n_errors}")
     plot_stability(phys_tol)
     plot_trajectories(phys_tol, skip)
     plot_errors(phys_tol, skip)
 
-    opt_tol = optimize_tol(phys_tol)
+    opt_tol, n_errors = optimize_tol(phys_tol)
+    print(f"Optimal tolerance: {phys_tol:.3g}, number of errors: {n_errors}")
     plot_stability(opt_tol)
-    print(f"Optimal tolerance: {opt_tol:.3g}")
-    plot_trajectories(opt_tol, skip)
-    plot_errors(opt_tol, skip)
+    # plot_trajectories(opt_tol, skip)
+    # plot_errors(opt_tol, skip)
 
     plt.show()
 
