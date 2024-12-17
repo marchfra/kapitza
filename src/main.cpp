@@ -21,12 +21,12 @@ int main() {
 	const int nStep   = 10000;
 
 	const double minA = 0.0;
-	const double maxA = 0.3;  // a of order epsilon
+	const double maxA = 1.0;  // a of order epsilon
 	double gridA[nPoints + 1];
 	rangeArray(gridA, minA, maxA, nPoints);
 
 	const double minSigma = 1.0e-5;
-	const double maxSigma = 2.0e-2;  // sigma of order epsilon^2
+	const double maxSigma = 1.0e-1;  // sigma of order epsilon^2
 	double gridSigma[nPoints + 1];
 	rangeArray(gridSigma, minSigma, maxSigma, nPoints);
 
@@ -42,7 +42,7 @@ int main() {
 	const double theta0 = 1.0e-7;
 	const double omega0 = 0.0;  // omega0 is the initial angular velocity, not
 	                            // the frequency of oscillation of the fulcrum
-	const double mu = 0.1;      // mu of order epsilon
+	const double mu = 1;      // mu of order epsilon
 	const int nEq   = 5;
 
 	const double tmin = 0.0;

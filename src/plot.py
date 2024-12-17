@@ -55,13 +55,15 @@ def physical_tol(tol_guess: float = 1e-7, max_step: int = 1000) -> float:
         df["stability"] = np.abs(df["endpoint"]) < tol
 
     if df["stability"].sum() != 1:
-        raise ValueError("Failed to find the physical tolerance.")
+        raise ValueError("Failed to find the physical tolerance: overshot the value.")
 
     # Take small steps until the fixed point becomes unstable
     n_step = 0
     while df["stability"].sum() == 1:
         if n_step > max_step:
-            raise ValueError("Failed to find the physical tolerance.")
+            raise RecursionError(
+                "Failed to find the physical tolerance: max number of steps exceeded."
+            )
         tol *= 0.999
         df["stability"] = np.abs(df["endpoint"]) < tol
         n_step += 1
@@ -244,15 +246,15 @@ def main() -> None:
 
     skip = 1
 
-    phys_tol, n_errors = physical_tol()
+    phys_tol, n_errors = physical_tol(5e-8)
     print(f"Physical tolerance: {phys_tol:.3g}, number of errors: {n_errors}")
     plot_stability(phys_tol)
     plot_trajectories(phys_tol, skip)
-    plot_errors(phys_tol, skip)
+    # plot_errors(phys_tol, skip)
 
-    opt_tol, n_errors = optimize_tol(phys_tol)
-    print(f"Optimal tolerance: {phys_tol:.3g}, number of errors: {n_errors}")
-    plot_stability(opt_tol)
+    # opt_tol, n_errors = optimize_tol(phys_tol)
+    # print(f"Optimal tolerance: {phys_tol:.3g}, number of errors: {n_errors}")
+    # plot_stability(opt_tol)
     # plot_trajectories(opt_tol, skip)
     # plot_errors(opt_tol, skip)
 
