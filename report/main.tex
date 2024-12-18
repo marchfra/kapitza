@@ -1,0 +1,66 @@
+\documentclass{unitothesis}
+
+\usepackage[super]{nth}
+
+\usepackage{subcaption}
+
+\usepackage[T1]{fontenc}
+
+\usepackage{listings}
+
+\definecolor{Blue}{rgb}{0.2,0.2,0.9}
+\definecolor{Green}{rgb}{0,0.6,0}
+\definecolor{Gray}{rgb}{0.5,0.5,0.5}
+\definecolor{Purple}{rgb}{0.58,0,0.82}
+\definecolor{background}{rgb}{0.98,0.98,0.95}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{background},
+    commentstyle=\color{Green},
+    keywordstyle=\color{Blue},
+    numberstyle=\tiny\color{Gray},
+    stringstyle=\color{Purple},
+    basicstyle=\ttfamily\footnotesize,
+    basewidth=5.2pt,
+    breakatwhitespace=false,
+    extendedchars=true,
+    breaklines=true,
+    captionpos=b,
+    keepspaces=true,
+    numbers=left,
+    numbersep=5pt,
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    tabsize=4
+}
+\lstset{style=mystyle}
+
+\newcommand{\up}[1]{\uparrow_{\vu{#1}}}
+\newcommand{\down}[1]{\downarrow_{\vu{#1}}}
+\renewcommand{\dag}[1]{#1^\dagger}
+
+\author{Francesco Marchisotti}
+\title{Stability Analysis of the Upper Fixed\newline\newline Point of Kapitza's Pendulum in the\newline\newline $(a, \sigma)$--plane}
+\aayear{2024/2025}
+
+\begin{supervisors}
+   \supervisor{}{}{\sc Guido Boffetta}
+\end{supervisors}
+
+\begin{document}
+
+\maketitlepage
+
+{\hypersetup{linkcolor=black}\tableofcontents}
+
+\include{Files/problem}
+
+\include{Files/numerical}
+
+\appendix
+
+\newpage
+\include{Files/code}
+
+\end{document}
